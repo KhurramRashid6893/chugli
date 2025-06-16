@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Welcome, {{ username }}!</h1>
+<div id="chat-box">
+    <div id="messages">
+        {% for message in messages %}
+            <div><strong>{{ message.user.username }}:</strong> {{ message.content }}</div>
+        {% endfor %}
+    </div>
+    <input type="text" id="message-input" placeholder="Type a message...">
+    <button id="send-button">Send</button>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.js"></script>
+<script>
+    const socket = io();
+
+    socket.on('message', function(data) {
+        const messageElement = document.createElement('div');
+        messageElement.innerHTML = `<strong>${data.username}:</strong> ${data.message}`;
+        document.getElementById('messages').appendChild(messageElement);
+        document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+    });
+
+    document.getElementById('send-button').addEventListener('click', function() {
+        const message = document.getElementById('message-input').value.trim();
+        if (message) {
+            socket.send({ message: message });
+            document.getElementById('message-input').value = '';
+        }
+    });
+
+    document.getElementById('message-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            document.getElementById('send-button').click();
+        }
+    });
+</script>
+{% endblock %}
